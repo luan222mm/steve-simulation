@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#d9f4c7">
+<meta name="description" content="RPG de sobrevivência econômica do Steve: venda, registre horas e evolua.">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>Steve — Steve Simulation</title>
+<style>
+:root{--green:#39752d;--green2:#d9f4c7;--gold:#e9a526;--ink:#403b2b;--muted:#786d50;--paper:#fff9e9;--white:#fff;--line:#e5d5ad;--blue:#dff3ff;--purple:#f3e7ff;--red:#fce8db}
+*{box-sizing:border-box}body{margin:0;background:#f6f0df;color:var(--ink);font:16px system-ui,-apple-system,Segoe UI,sans-serif}
+header{padding:22px 16px;background:linear-gradient(135deg,#d9f4c7 0%,#fff0bd 48%,#f9d889 100%);border-bottom:4px solid #a8cf8b;position:relative;overflow:hidden;isolation:isolate}
+header:before{content:"💎  🟨  💎     🪙     💎  🟨  💎";position:absolute;inset:0;display:flex;align-items:flex-start;justify-content:space-around;flex-wrap:wrap;gap:12px;font-size:clamp(20px,4vw,38px);line-height:1.8;opacity:.23;transform:rotate(-7deg) scale(1.08);z-index:-1;pointer-events:none;text-shadow:2px 3px 0 #b67b1d}
+header:after{content:"◆  ◇  ◆  ◇  ◆  ◇  ◆  ◇  ◆";position:absolute;bottom:2px;left:0;right:0;text-align:center;letter-spacing:12px;color:#c68b1b;font-size:16px;opacity:.55;pointer-events:none}
+.hero{position:relative;z-index:1}.avatar{box-shadow:0 5px 0 #c9dcae,0 0 0 4px #fff8d8}
+.wrap{max-width:850px;margin:auto;padding:14px}.hero{display:flex;align-items:center;gap:14px}.avatar{
+  width:120px;
+  height:120px;
+  background:#fff;
+  border:2px solid #9cc87e;
+  border-radius:18px;
+  padding:8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-sizing:border-box;
+  overflow:hidden;
+}
+
+.avatar img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  display:block;
+}
+
+.avatar-painel {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  vertical-align: middle;
+}
+h1{font-size:clamp(24px,5vw,36px);line-height:1.05;margin:0;color:#24572b}h2{font-size:20px;margin:0 0 12px;color:#39752d}h3{font-size:17px;margin:0 0 8px;color:#7d5616}
+p{margin:6px 0;color:var(--muted)}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 3px 0 #eee2c7}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.stat{border-radius:13px;padding:12px;background:#fff2cc}.stat:nth-child(2){background:#e2f5d9}.stat:nth-child(3){background:#fce8db}.stat:nth-child(4){background:#dff3ff}.stat small{display:block;color:var(--muted)}.stat strong{display:block;font-size:21px;margin-top:3px}
+.bar{height:13px;background:#eee5d0;border-radius:99px;overflow:hidden}.bar span{display:block;height:100%;background:#65b947;width:0;transition:width .2s}
+.days{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.day{border:1px solid var(--line);background:#fff;border-radius:13px;padding:10px 4px;text-align:center;cursor:pointer;color:var(--ink)}.day.active{border:2px solid #d49a25;background:#fff0c2}.day.done{background:#d9f4c7;border-color:#7cb765}.day .emoji{font-size:24px;display:block}.day b,.day small{display:block}
+.task{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #f0e7d0}.task:last-child{border-bottom:0}.task input{width:20px;height:20px;accent-color:#65a94c;margin-top:2px}.task span{flex:1}
+label{display:block;font-size:13px;font-weight:650;color:var(--muted);margin:4px 0}
+input,select,textarea{width:100%;border:1px solid #d7c9a7;border-radius:10px;padding:12px;background:#fffef9;font:inherit;color:var(--ink)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button,.button{border:0;border-radius:12px;padding:13px 15px;background:#65ad48;color:white;font-weight:750;font-size:15px;cursor:pointer;width:100%;margin-top:8px}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #d49a25;outline-offset:2px}
+button:active{transform:translateY(1px)}button:disabled{opacity:.6;cursor:default}
+button.gold{background:#e9a526;color:#33250b}button.secondary{background:#fff3d0;color:#7d5616;border:1px solid #e6ca79}button.purple{background:#8e5ac2}
+.badge{display:inline-block;background:#e2f5d9;color:#39752d;border-radius:99px;padding:5px 9px;font-size:12px;font-weight:750}
+.mini{font-size:12px;color:var(--muted)}.notice{background:#fff5d9;padding:11px;border-radius:11px;color:#75613b;font-size:13px}
+.log{padding:9px;background:#fff9e9;border-radius:9px;margin:6px 0;font-size:14px;overflow-wrap:anywhere}
+footer{text-align:center;padding:22px;color:#39752d;font-weight:800}
+.sound-toggle{position:absolute;right:14px;top:12px;width:auto;margin:0;padding:8px 11px;border:2px solid #d9b35c;background:#fff8dc;color:#684b11;border-radius:999px;z-index:2;font-size:13px;box-shadow:0 3px 0 #d8c18c}
+.fab-sale{position:fixed;right:18px;bottom:calc(22px + env(safe-area-inset-bottom));z-index:20;width:68px;height:68px;border-radius:50%;padding:0;margin:0;border:4px solid #fff3b7;background:radial-gradient(circle at 30% 25%,#ffe994,#e6a51b 65%,#b9760b);color:#503407;font-size:28px;box-shadow:0 5px 0 #9b6b14,0 8px 20px #4d3b1d55;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0}
+.fab-sale span{font-size:10px;line-height:1;font-weight:900;letter-spacing:.3px}.fab-sale:active{transform:translateY(3px);box-shadow:0 2px 0 #9b6b14,0 4px 12px #4d3b1d44}
+.toast{position:fixed;left:50%;bottom:calc(102px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;background:#254d24;color:white;padding:11px 16px;border-radius:999px;font-weight:800;box-shadow:0 4px 18px #0002;max-width:90vw;text-align:center;pointer-events:none;animation:toastIn .18s ease-out}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
+
+.audio-controls{position:relative;z-index:3;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;padding:0 12px 10px}
+.sound-toggle{border:1px solid #b7ca91;border-radius:999px;background:#fff9df;color:#315b2a;padding:9px 13px;font-weight:800;box-shadow:0 2px 0 #d8c78c;cursor:pointer}
+#musicToggle{background:#fff0c2;border-color:#d9aa42;color:#704b08}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+@media(min-width:650px){.stats{grid-template-columns:repeat(4,1fr)}.days{grid-template-columns:repeat(6,1fr)}.layout{display:grid;grid-template-columns:1fr 1fr;gap:12px}.layout .card{margin:0}.full{grid-column:1/-1}}
+
+/* THEME RPG MOBILE AZUL — mantendo todos os formulários, missões e funções originais */
+:root{--green:#c9f7a0;--green2:#b6e986;--gold:#ffd13d;--ink:#f7f9ff;--muted:#d0dcff;--paper:#203a83;--white:#fff;--line:#5c7bd4;--blue:#1c367b;--purple:#372c80;--red:#9d2d55}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 50% -10%,#486bd0 0,#253f91 42%,#101d50 100%);color:var(--ink);font:16px system-ui,-apple-system,'Segoe UI',sans-serif}
+header{padding:22px 16px 24px;background:linear-gradient(180deg,#172759 0%,#2f4d9c 100%);border-bottom:5px solid #7293ee;position:relative;overflow:hidden;isolation:isolate}
+header:before{content:"💎  🪙  ✨  💎  🪙  ✨  💎";position:absolute;inset:4px 0 0;display:flex;align-items:center;justify-content:space-around;flex-wrap:wrap;gap:12px;font-size:clamp(20px,4vw,38px);line-height:1.8;opacity:.2;transform:rotate(-7deg) scale(1.08);z-index:-1;pointer-events:none;text-shadow:2px 3px 0 #101d50}
+header:after{content:"◆  ◇  ◆  ◇  ◆  ◇  ◆  ◇  ◆";position:absolute;bottom:2px;left:0;right:0;text-align:center;letter-spacing:12px;color:#ffcf35;font-size:16px;opacity:.65;pointer-events:none}
+.wrap{max-width:850px;margin:auto;padding:14px}
+.hero{display:flex;align-items:center;gap:14px;position:relative;z-index:1}
+.avatar{font-size:56px;background:linear-gradient(145deg,#fff1a3,#ffbd28);border:4px solid #fff3b7;border-radius:18px;padding:8px;box-shadow:0 5px 0 #9a5a16,0 0 0 4px #4267c1}
+h1{font-size:clamp(22px,5vw,36px);line-height:1.14;margin:0;color:#fff;text-shadow:0 3px #15275f,2px 4px #15275f}
+h2{font-size:20px;margin:0 0 12px;color:#fff;text-shadow:0 2px #14245b}
+h3{font-size:17px;margin:0 0 8px;color:#ffe27a;text-shadow:0 2px #66400a}
+p{margin:6px 0;color:#dbe5ff}
+.card{background:linear-gradient(145deg,#3458ad,#20387f);border:3px solid #5d7ddd;border-radius:20px;padding:16px;margin:14px 0;box-shadow:0 7px 0 #101d50,inset 0 2px #8da8ff}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.stat{border:3px solid #17275f;border-radius:14px;padding:12px;background:linear-gradient(145deg,#fff0bb,#ffd36a);color:#49320a;box-shadow:inset 0 3px #fff9d8}
+.stat:nth-child(2){background:linear-gradient(145deg,#d9f8c8,#8fe06c);color:#204a1a}
+.stat:nth-child(3){background:linear-gradient(145deg,#ffdfce,#f4a77f);color:#6d2e16}
+.stat:nth-child(4){background:linear-gradient(145deg,#d7f5ff,#81d9ff);color:#123e65}
+.stat small{display:block;color:inherit;opacity:.8}
+.stat strong{display:block;font-size:21px;margin-top:3px}
+.bar{height:16px;background:#101d50;border:2px solid #6e8be3;border-radius:99px;overflow:hidden;box-shadow:inset 0 2px 5px #08143b}
+.bar span{display:block;height:100%;background:linear-gradient(#fff079,#ffb71c);width:0;transition:width .2s;box-shadow:0 0 10px #ffcf35}
+.days{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.day{border:3px solid #526fca;background:linear-gradient(#385bb0,#243e86);border-radius:14px;padding:10px 4px;text-align:center;cursor:pointer;color:#fff;box-shadow:0 4px 0 #101d50}
+.day.active{border:3px solid #fff0a1;background:linear-gradient(#ffe779,#ffb822);color:#50370b;box-shadow:0 4px 0 #925b12}
+.day.done{background:linear-gradient(#a2f36b,#48bf29);border-color:#d3ffae;color:#164e13}
+.day .emoji{font-size:24px;display:block}.day b,.day small{display:block}
+.task{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #6b84ce}.task:last-child{border-bottom:0}
+.task input{width:20px;height:20px;accent-color:#8ef04b;margin-top:2px}.task span{flex:1}
+label{display:block;font-size:13px;font-weight:750;color:#d5e0ff;margin:7px 0}
+input,select,textarea{width:100%;border:2px solid #637fd5;border-radius:11px;padding:12px;background:#152963;color:#fff;font:inherit}
+input::placeholder,textarea::placeholder{color:#aabbe9}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button,.button{border:3px solid #c3ff98;border-radius:13px;padding:12px 15px;background:linear-gradient(#8bf64c,#49c91a);color:#fff;font-weight:900;font-size:15px;cursor:pointer;width:100%;margin-top:8px;box-shadow:0 5px 0 #247b19,inset 0 3px #d9ffb8;text-shadow:0 2px #287d16}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #ffe27a;outline-offset:2px}
+button:active{transform:translateY(3px);box-shadow:0 2px 0 #247b19}
+button:disabled{opacity:.6;cursor:default}
+button.gold{background:linear-gradient(#ffe77a,#ffb71c);color:#563800;border-color:#fff2a5;box-shadow:0 5px 0 #9a5d12,inset 0 3px #fff9d4;text-shadow:none}
+button.secondary{background:linear-gradient(#fff,#dbe7ff);color:#203b83;border:3px solid #8eabff;box-shadow:0 5px 0 #12275e,inset 0 2px #fff;text-shadow:none}
+button.purple{background:linear-gradient(#c29aff,#8051c9);border-color:#e3ceff;box-shadow:0 5px 0 #4a2c83,inset 0 3px #eadbff}
+.badge{display:inline-block;background:#ffe27a;color:#593e08;border:2px solid #fff1a1;border-radius:9px;padding:5px 9px;font-size:12px;font-weight:900}
+.mini{font-size:12px;color:#d0dcff}.notice{background:#14275f;border:2px solid #6886e4;padding:11px;border-radius:12px;color:#e5edff;font-size:13px}
+.log{padding:10px;background:#172c6a;border:1px solid #526fc7;border-radius:10px;margin:6px 0;font-size:14px;overflow-wrap:anywhere;color:#f5f7ff}
+footer{text-align:center;padding:22px;color:#dbe5ff;font-weight:800}
+.audio-controls{position:relative;z-index:3;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;padding:0 12px 10px}
+.sound-toggle{border:2px solid #a9c0ff;border-radius:999px;background:linear-gradient(#fff,#dce7ff);color:#203b83;padding:9px 13px;font-weight:900;box-shadow:0 3px 0 #14275f;cursor:pointer}
+#musicToggle{background:linear-gradient(#fff0a0,#ffc632);border-color:#fff1a3;color:#674400}
+.fab-sale{position:fixed;right:18px;bottom:calc(22px + env(safe-area-inset-bottom));z-index:20;width:76px;height:76px;border-radius:50%;padding:0;margin:0;border:4px solid #fff1a1;background:radial-gradient(circle at 30% 25%,#fff18b,#ffc928 48%,#ec9411 76%);color:#78410a;font-size:28px;box-shadow:0 0 0 4px #9d5c14,0 8px 0 #101d50,0 8px 20px #0005;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0}
+.fab-sale span{font-size:10px;line-height:1;font-weight:1000;letter-spacing:.3px}.fab-sale:active{transform:translateY(3px);box-shadow:0 0 0 4px #9d5c14,0 3px 0 #101d50}
+
+/* Botões flutuantes de feedback da expedição */
+.fab-feedback{position:fixed;right:22px;z-index:21;width:64px;height:64px;border-radius:50%;padding:0;margin:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0;font-size:30px;line-height:1;border:3px solid #d9e8ff;box-shadow:0 0 0 3px #16306f,0 6px 0 #101d50,0 8px 18px #0006;touch-action:manipulation}
+.fab-feedback span{font-size:9px;line-height:1.2;font-weight:1000;letter-spacing:.4px;margin-top:3px}
+.fab-pickaxe{bottom:calc(22px + env(safe-area-inset-bottom));background:radial-gradient(circle at 30% 22%,#d5e5ff,#628de8 55%,#274bb1);border-color:#d9e8ff;text-shadow:0 2px 2px #14275f}
+.fab-diamond{bottom:calc(98px + env(safe-area-inset-bottom));background:radial-gradient(circle at 30% 20%,#f0ffff,#61e5ff 35%,#1686ed 68%,#1246b4);border-color:#aaf4ff;color:#fff;text-shadow:0 2px 3px #06458b;box-shadow:0 0 0 3px #173b83,0 6px 0 #101d50,0 0 18px #45cfff88}
+.fab-feedback:active{transform:translateY(3px) scale(.97);box-shadow:0 0 0 3px #16306f,0 3px 0 #101d50}
+.fab-feedback:focus-visible{outline:3px solid #ffe27a;outline-offset:4px}
+@keyframes gemShine{0%,100%{filter:brightness(1)}50%{filter:brightness(1.25)}}
+.fab-diamond{animation:gemShine 2.8s ease-in-out infinite}
+@media(max-width:430px){.fab-feedback{right:16px;width:60px;height:60px}.fab-diamond{bottom:calc(92px + env(safe-area-inset-bottom))}.fab-pickaxe{bottom:calc(22px + env(safe-area-inset-bottom))}.fab-sale{right:88px;width:58px;height:58px;font-size:23px}.fab-sale span{font-size:8px}}
+.toast{position:fixed;left:50%;bottom:calc(110px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;background:linear-gradient(#355ab6,#1c3479);border:2px solid #8caaff;color:white;padding:11px 16px;border-radius:14px;font-weight:900;box-shadow:0 5px 0 #0a1747;max-width:90vw;text-align:center;pointer-events:none;animation:toastIn .18s ease-out}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+@media(min-width:650px){.stats{grid-template-columns:repeat(4,1fr)}.days{grid-template-columns:repeat(6,1fr)}.layout{display:grid;grid-template-columns:1fr 1fr;gap:12px}.layout .card{margin:0}.full{grid-column:1/-1}}
+@media(max-width:430px){.hero{align-items:flex-start}.avatar{font-size:42px;padding:5px}header .wrap{padding:10px}.card{padding:14px 12px}.stat strong{font-size:19px}.audio-controls{padding-top:8px}.sound-toggle{font-size:12px;padding:8px 10px}}
+
+
+/* Cartão de mensagem grande e legível */
+.message-overlay{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(4,12,38,.82);backdrop-filter:blur(5px)}
+.message-overlay.open{display:flex}
+.message-card{width:min(100%,440px);border:3px solid #8caaff;border-radius:24px;padding:26px 22px 22px;text-align:center;background:linear-gradient(160deg,#203e91,#101d50);color:#fff;box-shadow:0 12px 45px #0008;animation:messagePop .22s ease-out}
+.message-card.tip{background:linear-gradient(160deg,#087db5,#102d70);border-color:#7af0ff}
+.message-icon{font-size:64px;line-height:1.2;margin-bottom:8px}
+.message-kicker{font-size:13px;letter-spacing:2px;font-weight:1000;color:#bcd0ff;margin-bottom:12px}
+.message-card.tip .message-kicker{color:#a8f7ff}
+.message-text{font-size:clamp(22px,6vw,29px);line-height:1.35;font-weight:900;margin:0 0 22px;overflow-wrap:anywhere}
+.message-card button{width:100%;min-height:54px;font-size:16px;background:linear-gradient(#fff,#dce7ff);color:#203b83;border:2px solid #a9c0ff;border-radius:14px;font-weight:1000}
+@keyframes messagePop{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.message-card{animation:none}}
+/* TELA DE PREPARAÇÃO DA EXPEDIÇÃO */
+.overlay-mochila {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(5, 10, 30, 0.88);
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.painel-mochila {
+  background: linear-gradient(145deg, #243d78, #14244e);
+  border: 4px solid #e9b84b;
+  border-radius: 22px;
+  box-shadow: 0 0 30px rgba(233, 184, 75, 0.4);
+  width: 100%;
+  max-width: 550px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 22px;
+  text-align: center;
+  color: white;
+}
+
+.painel-mochila h2 {
+  color: #ffd76a;
+  margin-top: 10px;
+}
+
+.painel-mochila img {
+  width: 100%;
+  max-width: 320px;
+  max-height: 230px;
+  object-fit: contain;
+  border-radius: 12px;
+  margin: 12px auto;
+}
+
+.itens-mochila {
+  text-align: left;
+  margin-top: 18px;
+  display: grid;
+  gap: 14px;
+}
+
+.itens-mochila label {
+  background: rgba(255, 255, 255, 0.10);
+  padding: 12px;
+  border: 1px solid rgba(255, 215, 106, 0.4);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.itens-mochila input {
+  width: 20px;
+  height: 20px;
+  accent-color: #e9b84b;
+}
+
+.fechar-mochila {
+  display: block;
+  margin-left: auto;
+  background: #9d3030;
+  color: white;
+  border: 2px solid #ffaaaa;
+  border-radius: 9px;
+  padding: 9px 14px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* FUNDO DA MINA — VERSÃO CELULAR */
+body {
+  background-image: url("fundo-mina-celula.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-color: #101d50;
+}
+</style>
+</head>
+<body>
+
+<div class="expedicao-topo">
+  <button id="iniciarExpedicao">⚠️ PREPARE SUA MOCHILA</button>
+</div>
+
+<header><div class="audio-controls"><button id="soundToggle" class="sound-toggle" aria-pressed="true" title="Ativar ou desativar efeitos sonoros">🔊 Efeitos ligados</button><button id="musicToggle" class="sound-toggle" aria-pressed="false" title="Tocar ou pausar música de fundo">🎵 Tocar música</button></div><audio id="bgMusic" src="instrumental.mp4a" preload="metadata" loop></audio><div class="wrap hero"><div class="avatar">
+  <img src="steve-avatar.png" alt="Steve, o aventureiro">
+</div><div><h1>⛏️ Steve Simulation</h1><p><b>Jogador: Steve</b> · Gamificação de realidade alternativa</p><p> Explore novos lugares o mundo mágico é seu.</p></div></div></header>
+<div id="telaMochila" class="overlay-mochila">
+  <div class="painel-mochila">
+    <button id="fecharMochila" class="fechar-mochila">✖ Fechar</button>
+
+    <h2>🎒 Preparação da expedição</h2>
+
+    <img src="steve8.jpeg" alt="Steve com sua mochila">
+
+    <p>Confira os requisitos antes de sair para a aventura!</p>
+
+    <div class="itens-mochila">
+      <label><input type="checkbox"> Água para hidratação</label>
+      <label><input type="checkbox"> Alimentação para a expedição</label>
+      <label><input type="checkbox"> Estoque de jujubas</label>
+      <label><input type="checkbox"> Dinheiro para transporte</label>
+      <label><input type="checkbox"> Celular carregado</label>
+    </div>
+  </div>
+</div>
+<main class="wrap">
+<section class="card">
+<h2>
+  <img src="steve-avatar2.png" alt="Steve"
+       class="avatar-painel">
+  Painel do aventureiro
+</h2>
+<div class="stats">
+<div class="stat"><small>🪙 Faturamento</small><strong id="rev">R$ 0,00</strong></div>
+<div class="stat"><small>⭐ Experiência</small><strong id="xp">0 XP</strong><small id="level">Nível 1 · Minerador iniciante</small></div>
+<div class="stat"><small>⏱️ Horas na rua</small><strong id="hours">0,0 h</strong></div>
+<div class="stat"><small>🧾 Custos registrados</small><strong id="costs">R$ 0,00</strong></div>
+</div>
+<p style="margin-top:14px">🎯 Progresso rumo aos R$ 1.000: <b id="percent">0%</b></p><div class="bar"><span id="progress"></span></div>
+<p id="remaining">Faltam R$ 1.000,00</p>
+<div style="margin-top:14px">
+  <p style="display:flex;justify-content:space-between;gap:10px"><b>⭐ XP para o próximo nível</b><b id="xpProgressLabel">0 / 100 XP</b></p>
+  <div class="bar" style="background:#eee5d0"><span id="xpProgress" style="background:#e9a526;width:0%"></span></div>
+  <p class="mini" id="xpNextLabel">Faltam 100 XP para o próximo nível.</p>
+</div>
+<p class="mini">Saldo estimado: capital inicial + vendas − custos. Registre reposições e despesas sem duplicar custos.</p>
+</section>
+</section>
+
+<section class="card" id="painelCronometro">
+  <h2>⏱️ Tempo de vendas</h2>
+
+  <div style="text-align:center; padding:15px;">
+    <strong id="relogioVendas" style="font-size:38px; color:#e9a526;">
+      00:00:00
+    </strong>
+  </div>
+
+  <button id="iniciarVendas" disabled
+    style="background:#999; color:white; width:100%; padding:14px; border-radius:12px;">
+    🔒 INICIAR VENDAS
+  </button>
+
+  <button id="encerrarVendas" disabled
+    style="background:#999; color:white; width:100%; padding:14px; border-radius:12px; margin-top:10px;">
+    ⏹ ENCERRAR VENDAS
+  </button>
+
+  <p id="statusVendas" class="mini" style="text-align:center;">
+    ⚠️ Prepare sua mochila para liberar o cronômetro.
+  </p>
+</section>
+
+<section class="card">
+<h2>🗺️ Mapa da expedição</h2><p>Escolha o dia que você está jogando.</p><div class="days" id="days"></div>
+</section>
+<div class="layout">
+<section class="card">
+<h2 id="missionTitle">🌱 Dia 1 — Preparação da mina</h2>
+<p id="goal">Meta do dia: R$ 160,00</p><div id="tasks"></div>
+<button id="finishDay" class="gold">🏆 Concluir expedição · +50 XP</button>
+<p class="mini">Conclua o dia quando terminar a operação. Não precisa bater a meta para registrar o aprendizado.</p>
+</section>
+<section class="card">
+<h2>🎒 Inventário</h2>
+<div class="stats">
+<div class="stat"><small>🍬 Jujubas restantes</small><strong id="stock">60</strong></div>
+<div class="stat"><small>💰 Saldo estimado</small><strong id="balance">R$ 40,00</strong></div>
+<div class="stat"><small>🛍️ Vendas registradas</small><strong id="salesCount">0</strong></div>
+<div class="stat"><small>💵 Faturamento por hora</small><strong id="perHour">—</strong></div>
+</div>
+<div class="row" style="margin-top:10px">
+  <div class="stat"><small>📍 Faturamento do dia</small><strong id="dayRevenue">R$ 0,00</strong></div>
+  <div class="stat"><small>⏱️ Horas do dia</small><strong id="dayHours">0,0 h</strong></div>
+</div>
+</section>
+<section class="card">
+<h2>🪙 Registrar venda</h2>
+<label for="product">Tipo de produto</label><select id="product"><option>Jujubas</option><option>Kit de doces</option><option>Outra venda / gorjeta</option></select>
+<div class="row"><div><label for="price">Preço unitário (R$)</label><input id="price" inputmode="decimal" value="2,00"></div><div><label for="qty">Quantidade</label><input id="qty" type="number" min="1" step="1" value="1"></div></div>
+<label for="expense">Despesa adicional desta operação (R$)</label><input id="expense" inputmode="decimal" value="0,00">
+<button class="gold" id="addSale">⛏️ Confirmar venda · +20 XP</button>
+<p class="mini">Vendas de jujubas reduzem o estoque; kits e gorjetas não reduzem automaticamente.</p>
+</section>
+<section class="card">
+<h2>📦 Repor estoque / registrar compra</h2>
+<p>Quando comprar novas caixas, some as unidades ao inventário e registre o gasto no caixa.</p>
+<div class="row">
+  <div><label for="restockQty">Unidades adicionadas</label><input id="restockQty" type="number" min="1" step="1" value="30"></div>
+  <div><label for="restockCost">Custo da reposição (R$)</label><input id="restockCost" inputmode="decimal" value="20,00"></div>
+</div>
+<button id="restock" class="secondary">📦 Adicionar ao inventário e registrar custo</button>
+</section>
+<section class="card">
+<h2>⏱️ Registrar horas</h2>
+<label for="time">Horas nesta rodada (ex.: 3,5)</label><input id="time" inputmode="decimal" value="1">
+<button id="addTime">🕒 Registrar horas · +5 XP</button>
+<div class="notice">Registre o tempo real da operação. XP premia execução e aprendizado, não esgotamento.</div>
+</section>
+<section class="card">
+<h2>📓 Diário de bordo</h2>
+<label for="note">O que você descobriu hoje?</label><textarea id="note" rows="3" placeholder="Ex.: movimento bom perto do terminal; chuva; abordagem funcionou..."></textarea>
+<button class="purple" id="saveNote">📜 Salvar observação · +5 XP</button>
+<div id="logs"></div>
+</section>
+<section class="card">
+<h2>🏆 Conquistas</h2><div id="achievements"></div>
+</section>
+<section class="card full">
+<h2>💾 Salvamento e transferência</h2>
+<p>O progresso é salvo automaticamente neste navegador. Faça uma cópia de segurança para trocar de aparelho ou navegador.</p>
+<div class="row"><button id="export" class="secondary">📤 Exportar salvamento</button><button id="importBtn" class="secondary">📥 Importar salvamento</button></div>
+<input id="importFile" type="file" accept="application/json" hidden>
+<button id="reset" style="background:#b94d3b">Reiniciar campanha</button>
+<p class="mini">A versão instalada como app precisa ser publicada em um endereço seguro (HTTPS) para permitir instalação pelo Chrome. O arquivo pode ser hospedado gratuitamente; os dados continuam no navegador deste aparelho.</p>
+</section>
+</div>
+<footer>🌱 MINERE · VENDA · REGISTRE · EVOLUA ⛏️</footer>
+</main>
+<button id="quickSale" class="fab-sale" aria-label="Registrar venda de uma jujuba por dois reais" title="Venda rápida: 1 jujuba = R$ 2">🪙<span>VENDI!</span></button>
+<button id="tipDiamond" class="fab-feedback fab-diamond" aria-label="Registrar uma gorjeta em forma de diamante" title="Diamante da gorjeta">💎<span>GORJETA</span></button>
+<button id="noPickaxe" class="fab-feedback fab-pickaxe" aria-label="Registrar um não de cliente e receber encorajamento" title="Cada não é experiência">⛏️<span>MAIS UM!</span></button>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<div id="messageOverlay" class="message-overlay" role="dialog" aria-modal="true" aria-labelledby="messageText" aria-hidden="true">
+ <div id="messageCard" class="message-card">
+  <div id="messageIcon" class="message-icon">⛏️</div>
+  <div id="messageKicker" class="message-kicker">XP DE CORAGEM</div>
+  <p id="messageText" class="message-text">Cada não é prática. Sua missão continua!</p>
+  <button id="messageClose" type="button">CONTINUAR EXPEDIÇÃO</button>
+ </div>
+</div>
+<script>
+let soundEnabled=true, audioCtx=null, toastTimer=null;
+function playSound(kind="click"){
+ if(!soundEnabled)return;
+ try{
+  audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==="suspended")audioCtx.resume();
+  const now=audioCtx.currentTime;
+  const patterns={click:[740,990],sale:[523,784,1047,1568],level:[659,784,988,1319,1568],task:[880,1175,1480],error:[330,247]};
+  const notes=patterns[kind]||patterns.click;
+  notes.forEach((freq,i)=>{
+   const osc=audioCtx.createOscillator(),gain=audioCtx.createGain();
+   const t=now+i*(kind==="click"?.045:.075);
+   osc.type="square";
+   osc.frequency.setValueAtTime(freq,t);
+   if(kind==="sale")osc.frequency.exponentialRampToValueAtTime(freq*1.25,t+.055);
+   gain.gain.setValueAtTime(.0001,t);gain.gain.exponentialRampToValueAtTime(kind==="click"?.025:.055,t+.008);gain.gain.exponentialRampToValueAtTime(.0001,t+.09);
+   osc.connect(gain);gain.connect(audioCtx.destination);osc.start(t);osc.stop(t+.095);
+  });
+ }catch(e){}
+}
+function showToast(message){const t=document.getElementById("toast");t.textContent=message;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.hidden=true,1900)}
+document.addEventListener("click",e=>{
+ const b=e.target.closest("button");if(!b||["soundToggle","musicToggle","quickSale","tipDiamond","noPickaxe"].includes(b.id))return;
+ const kind=b.id==="finishDay"?"level":(b.id==="addSale"?"sale":(b.matches("[data-task]")?"task":"click"));playSound(kind);
+});
+document.getElementById("soundToggle").onclick=()=>{soundEnabled=!soundEnabled;const b=document.getElementById("soundToggle");b.textContent=soundEnabled?"🔊 Efeitos ligados":"🔇 Efeitos desligados";b.setAttribute("aria-pressed",String(soundEnabled));if(soundEnabled)playSound("sale")};
+const bgMusic=document.getElementById("bgMusic"),musicToggle=document.getElementById("musicToggle");
+bgMusic.volume=.24;
+musicToggle.onclick=async()=>{
+ try{
+  if(bgMusic.paused){await bgMusic.play();musicToggle.textContent="⏸️ Pausar música";musicToggle.setAttribute("aria-pressed","true");}
+  else{bgMusic.pause();musicToggle.textContent="🎵 Tocar música";musicToggle.setAttribute("aria-pressed","false");}
+ }catch(e){showToast("Toque novamente para iniciar a música.")}
+};
+const goals=[160,170,170,170,170,160];
+const dayNames=["QUI","SEX","SÁB","DOM","SEG","TER"];
+const dayTitles=["Preparação da mina","Expedição comercial","Caça aos recursos","Explorar novos caminhos","Otimizar a mineração","Tesouro final"];
+const dayEmoji=["🌱","🪵","🍬","🧭","💎","🏆"];
+const taskLists=[
+["🎒 Conferir as 60 jujubas","🧭 Escolher uma rota segura","💧 Preparar água e alimentação","🗣️ Testar a abordagem de venda","📒 Registrar os resultados"],
+["🛒 Planejar reposição de estoque","📍 Testar um novo local","🗣️ Melhorar a abordagem","📊 Comparar os resultados"],
+["⛏️ Repetir a estratégia promissora","🍬 Testar uma oferta ou kit","🪙 Calcular as margens","📒 Registrar aprendizados"],
+["🧭 Explorar uma rota alternativa","📈 Comparar vendas por hora","🎒 Conferir estoque e despesas"],
+["💎 Aperfeiçoar a estratégia","🪙 Proteger o capital de giro","📊 Avaliar rentabilidade"],
+["🏆 Fechar o balanço da campanha","🧮 Calcular faturamento por hora","🗺️ Planejar a próxima expedição"]];
+const levels=["Minerador iniciante","Explorador","Minerador experiente","Mestre da mina","Rei do ouro","Lenda das cavernas"];
+const defaults={day:1,xp:0,revenue:0,costs:0,hours:0,stock:60,sales:0,capital:40,checked:[],doneDays:[],logs:[],dailyRevenue:{},dailyHours:{}};
+let s={...defaults,...load()};
+s.dailyRevenue=s.dailyRevenue||{}; s.dailyHours=s.dailyHours||{};
+function load(){try{return JSON.parse(localStorage.getItem("steveMineSave")||"{}")}catch(e){return {}}}
+function save(){localStorage.setItem("steveMineSave",JSON.stringify(s));render()}
+function money(n){return n.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
+function num(id){return Number(document.getElementById(id).value.trim().replace(/\./g,"").replace(",", "."))}
+function addLog(t){s.logs.unshift(t);s.logs=s.logs.slice(0,50)}
+function render(){
+document.getElementById("rev").textContent=money(s.revenue);document.getElementById("xp").textContent=s.xp+" XP";
+let lv=Math.min(5,Math.floor(s.xp/100));document.getElementById("level").textContent="Nível "+(lv+1)+" · "+levels[lv];
+let within=s.xp%100, next=lv>=5?100:100-within;
+document.getElementById("xpProgressLabel").textContent=lv>=5?"NÍVEL MÁXIMO":within+" / 100 XP";
+document.getElementById("xpProgress").style.width=(lv>=5?100:within)+"%";
+document.getElementById("xpNextLabel").textContent=lv>=5?"Você alcançou o nível máximo atual!":"Faltam "+next+" XP para o próximo nível.";
+document.getElementById("hours").textContent=s.hours.toLocaleString("pt-BR",{maximumFractionDigits:1})+" h";
+document.getElementById("costs").textContent=money(s.costs);
+let pct=Math.min(100,s.revenue/10);document.getElementById("percent").textContent=pct.toFixed(1).replace(".",",")+"%";document.getElementById("progress").style.width=pct+"%";document.getElementById("remaining").textContent="Faltam "+money(Math.max(0,1000-s.revenue));
+document.getElementById("stock").textContent=s.stock;document.getElementById("balance").textContent=money(s.capital+s.revenue-s.costs);document.getElementById("salesCount").textContent=s.sales;document.getElementById("perHour").textContent=s.hours>0?money(s.revenue/s.hours):"—";
+document.getElementById("dayRevenue").textContent=money(s.dailyRevenue[s.day]||0);
+document.getElementById("dayHours").textContent=(s.dailyHours[s.day]||0).toLocaleString("pt-BR",{maximumFractionDigits:1})+" h";
+document.getElementById("days").innerHTML=dayNames.map((n,i)=>`<button class="day ${s.day===i+1?"active":""} ${s.doneDays.includes(i+1)?"done":""}" data-day="${i+1}"><span class="emoji">${s.doneDays.includes(i+1)?"🏆":dayEmoji[i]}</span><b>Dia ${i+1}</b><small>${n}</small><b>🪙 ${goals[i]}</b><small>${s.doneDays.includes(i+1)?"Concluído ✓":"Abrir missão"}</small></button>`).join("");
+document.querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{s.day=Number(b.dataset.day);save()});
+let d=s.day-1;document.getElementById("missionTitle").textContent=dayEmoji[d]+" Dia "+s.day+" — "+dayTitles[d];document.getElementById("goal").textContent="Meta sugerida: "+money(goals[d]);
+document.getElementById("tasks").innerHTML=taskLists[d].map((t,i)=>{let key=s.day+"-"+i,checked=s.checked.includes(key);return `<label class="task"><input type="checkbox" data-task="${key}" ${checked?"checked":""}><span>${t} <small>+10 XP</small></span></label>`}).join("");
+document.querySelectorAll("[data-task]").forEach(c=>c.onchange=()=>{let key=c.dataset.task;if(c.checked&&!s.checked.includes(key)){s.checked.push(key);s.xp+=10;addLog("✅ Dia "+s.day+": tarefa concluída +10 XP")}else if(!c.checked&&s.checked.includes(key)){s.checked=s.checked.filter(x=>x!==key);s.xp=Math.max(0,s.xp-10);addLog("↩️ Tarefa desmarcada: -10 XP")}save()});
+let finish=document.getElementById("finishDay");finish.disabled=s.doneDays.includes(s.day);finish.textContent=finish.disabled?"🏆 Expedição concluída!":"🏆 Concluir expedição · +50 XP";
+document.getElementById("logs").innerHTML=s.logs.slice(0,5).map(x=>`<div class="log">${escapeHtml(x)}</div>`).join("");
+let ach=[["🍬","Primeiro tesouro vendido","Registrar uma venda",s.sales>0],["🗓️","Explorador persistente","Concluir um dia",s.doneDays.length>0],["💰","Lenda dos mil reais","Faturar R$ 1.000",s.revenue>=1000],["💎","Mestre da eficiência","Registrar 5 horas",s.hours>=5]];
+document.getElementById("achievements").innerHTML=ach.map(a=>`<div class="task"><span style="font-size:24px">${a[0]}</span><span><b>${a[1]}</b><br><small>${a[2]}</small></span><span class="badge">${a[3]?"Desbloqueada":"Bloqueada"}</span></div>`).join("");
+}
+function escapeHtml(str){return String(str).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+document.getElementById("addSale").onclick=()=>{
+let p=num("price"),q=Number(document.getElementById("qty").value),e=num("expense"),product=document.getElementById("product").value,total=p*q;
+if(!Number.isFinite(p)||p<=0||!Number.isInteger(q)||q<1||!Number.isFinite(e)||e<0){alert("Confira preço, quantidade e despesa.");return}
+if(product==="Jujubas"&&q>s.stock){alert("Você tem apenas "+s.stock+" jujubas no inventário.");return}
+s.revenue+=total;s.dailyRevenue[s.day]=(s.dailyRevenue[s.day]||0)+total;s.costs+=e;s.sales++;if(product==="Jujubas")s.stock-=q;s.xp+=20;addLog("🪙 Dia "+s.day+": "+product+", "+q+" unidade(s), "+money(total)+" recebidos, "+money(e)+" despesa, +20 XP");document.getElementById("qty").value=1;document.getElementById("expense").value="0,00";save();
+};
+document.getElementById("quickSale").onclick=()=>{
+ if(s.stock<1){showToast("🎒 Estoque zerado! Registre uma reposição.");playSound("click");return}
+ const beforeLevel=Math.min(5,Math.floor(s.xp/100));
+ s.revenue+=2;s.dailyRevenue[s.day]=(s.dailyRevenue[s.day]||0)+2;s.sales++;s.stock--;s.xp+=20;
+ addLog("🪙 Dia "+s.day+": venda rápida de 1 jujuba, "+money(2)+" recebidos, +20 XP");save();playSound("sale");
+ const afterLevel=Math.min(5,Math.floor(s.xp/100));showToast(afterLevel>beforeLevel?"🎉 SUBIU DE NÍVEL! +R$ 2,00 · +20 XP":"🍬 +R$ 2,00 · +20 XP · 1 jujuba vendida");
+};
+const noMessages=[
+ "⛏️ Cada não é prática. Você está treinando coragem, não tentando agradar todo mundo.",
+ "🛡️ Um cliente recusou; sua missão continua. Respire e siga no seu ritmo.",
+ "🌱 Rejeição faz parte da expedição. Você só precisa encontrar o próximo possível cliente.",
+ "⭐ XP de coragem! Você abordou alguém mesmo sem controlar a resposta.",
+ "🧭 Ajuste a rota se precisar. Um não é informação, não é um julgamento sobre você.",
+ "🔥 Boa! Você está construindo consistência tentativa por tentativa.",
+ "💙 Pausa, água e respiração também fazem parte da estratégia. Depois, decida se quer continuar.",
+ "🎯 O objetivo é aprender e vender com segurança — não insistir até se esgotar."
+];
+const tipMessages=[
+ "💎 GORJETA ENCONTRADA! Um gesto de generosidade iluminou sua expedição.",
+ "✨ Brilho raro! Uma gorjeta pode aparecer, mas não é obrigação de ninguém.",
+ "💠 DIAMANTE AZUL! Registre a gorjeta real quando ela acontecer — cada contribuição conta.",
+ "🌟 Tesouro extra! Agradeça com gentileza; a experiência vale mais que a expectativa.",
+ "🪙 Sorte na mina! Gorjetas são bônus, não algo que você precisa esperar de cada cliente."
+];
+let noCount=0,tipCount=0;
+function openBigMessage(kind,msg){
+ const overlay=document.getElementById("messageOverlay"),card=document.getElementById("messageCard");
+ const isTip=kind==="tip";
+ card.classList.toggle("tip",isTip);
+ document.getElementById("messageIcon").textContent=isTip?"💎":"⛏️";
+ document.getElementById("messageKicker").textContent=isTip?"DIAMANTE DA GORJETA":"XP DE CORAGEM";
+ document.getElementById("messageText").textContent=msg;
+ overlay.classList.add("open");overlay.setAttribute("aria-hidden","false");
+ document.getElementById("messageClose").focus();
+}
+function closeBigMessage(){const overlay=document.getElementById("messageOverlay");overlay.classList.remove("open");overlay.setAttribute("aria-hidden","true")}
+document.getElementById("messageClose").onclick=closeBigMessage;
+document.getElementById("messageOverlay").addEventListener("click",e=>{if(e.target.id==="messageOverlay")closeBigMessage()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeBigMessage()});
+document.getElementById("noPickaxe").onclick=()=>{noCount++;const msg=noMessages[(noCount-1)%noMessages.length];openBigMessage("no",msg);playSound("task");addLog("⛏️ Encorajamento após recusa de cliente #"+noCount+": "+msg);save()};
+document.getElementById("tipDiamond").onclick=()=>{tipCount++;const msg=tipMessages[(tipCount-1)%tipMessages.length];openBigMessage("tip",msg);playSound("level");addLog("💎 Mensagem do diamante da gorjeta #"+tipCount+": "+msg);save()};
+document.getElementById("addTime").onclick=()=>{let h=num("time");if(!Number.isFinite(h)||h<=0||h>24){alert("Informe horas válidas (até 24).");return}s.hours+=h;s.dailyHours[s.day]=(s.dailyHours[s.day]||0)+h;s.xp+=5;addLog("⏱️ Dia "+s.day+": "+h+" horas registradas, +5 XP");save()};
+document.getElementById("restock").onclick=()=>{let q=Number(document.getElementById("restockQty").value),c=num("restockCost");if(!Number.isInteger(q)||q<1||!Number.isFinite(c)||c<0){alert("Confira a quantidade e o custo da reposição.");return}s.stock+=q;s.costs+=c;s.xp+=5;addLog("📦 Dia "+s.day+": reposição de "+q+" unidades; custo "+money(c)+", +5 XP");document.getElementById("restockQty").value=30;document.getElementById("restockCost").value="20,00";save()};
+document.getElementById("saveNote").onclick=()=>{let n=document.getElementById("note").value.trim();if(!n)return;s.xp+=5;addLog("📓 Dia "+s.day+": "+n+" (+5 XP)");document.getElementById("note").value="";save()};
+document.getElementById("finishDay").onclick=()=>{if(s.doneDays.includes(s.day))return;s.doneDays.push(s.day);s.xp+=50;addLog("🏆 Dia "+s.day+" concluído: +50 XP");if(s.day<6)s.day++;save()};
+document.getElementById("export").onclick=()=>{let blob=new Blob([JSON.stringify(s,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="salvamento-steve-mina.json";a.click();URL.revokeObjectURL(url)};
+document.getElementById("importBtn").onclick=()=>document.getElementById("importFile").click();
+document.getElementById("importFile").onchange=async e=>{let f=e.target.files[0];if(!f)return;try{let d=JSON.parse(await f.text());if(!("xp" in d)||!("revenue" in d))throw Error();s={...defaults,...d};save();alert("Salvamento importado!")}catch(err){alert("Arquivo de salvamento inválido.")}e.target.value=""};
+document.getElementById("reset").onclick=()=>{if(confirm("Tem certeza? Exporte o salvamento antes de reiniciar.")){s={...defaults};save()}};
+render();
+if("serviceWorker" in navigator && location.protocol.startsWith("http"))window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+// CONTROLE DA MOCHILA
+const telaMochila = document.getElementById("telaMochila");
+
+document.getElementById("iniciarExpedicao").onclick = () => {
+  telaMochila.style.display = "flex";
+};
+
+document.getElementById("fecharMochila").onclick = () => {
+  telaMochila.style.display = "none";
+};
+// VERIFICAÇÃO DOS REQUISITOS DA MOCHILA
+const checklistExpedicao = document.querySelectorAll(
+  "#telaMochila .itens-mochila input[type='checkbox']"
+);
+
+const botaoIniciarVendas = document.getElementById("iniciarVendas");
+const statusVendas = document.getElementById("statusVendas");
+
+function verificarMochila() {
+  const mochilaCompleta = [...checklistExpedicao]
+    .every(caixa => caixa.checked);
+
+  botaoIniciarVendas.disabled = !mochilaCompleta;
+
+  if (mochilaCompleta) {
+    botaoIniciarVendas.style.background = "#219653";
+    botaoIniciarVendas.textContent = "🚀 INICIAR VENDAS";
+    statusVendas.textContent = "✅ Mochila completa! Steve está preparado.";
+  } else {
+    botaoIniciarVendas.style.background = "#999";
+    botaoIniciarVendas.textContent = "🔒 INICIAR VENDAS";
+    statusVendas.textContent = "⚠️ Prepare sua mochila para liberar o cronômetro.";
+  }
+}
+
+checklistExpedicao.forEach(caixa => {
+  caixa.addEventListener("change", verificarMochila);
+});
+
+verificarMochila();
+// CRONÔMETRO DE VENDAS
+let inicioVendas = null;
+let intervaloVendas = null;
+let tempoAcumulado = 0;
+
+const relogioVendas = document.getElementById("relogioVendas");
+const botaoEncerrarVendas = document.getElementById("encerrarVendas");
+
+function formatarTempo(segundos) {
+  const horas = Math.floor(segundos / 3600);
+  const minutos = Math.floor((segundos % 3600) / 60);
+  const segundosRestantes = segundos % 60;
+
+  return [horas, minutos, segundosRestantes]
+    .map(valor => String(valor).padStart(2, "0"))
+    .join(":");
+}
+
+function atualizarRelogio() {
+  const decorrido = Math.floor((Date.now() - inicioVendas) / 1000);
+  relogioVendas.textContent = formatarTempo(tempoAcumulado + decorrido);
+}
+
+botaoIniciarVendas.onclick = () => {
+  if (botaoIniciarVendas.disabled || intervaloVendas !== null) return;
+
+  inicioVendas = Date.now();
+
+  botaoIniciarVendas.disabled = true;
+  botaoIniciarVendas.style.background = "#999";
+  botaoIniciarVendas.textContent = "⛏️ VENDAS EM ANDAMENTO";
+
+  botaoEncerrarVendas.disabled = false;
+  botaoEncerrarVendas.style.background = "#c0392b";
+
+  statusVendas.textContent = "🚀 Steve está em missão de vendas!";
+
+  atualizarRelogio();
+  intervaloVendas = setInterval(atualizarRelogio, 250);
+};
+
+botaoEncerrarVendas.onclick = () => {
+  if (intervaloVendas === null) return;
+
+  atualizarRelogio();
+
+  tempoAcumulado += Math.floor((Date.now() - inicioVendas) / 1000);
+
+  clearInterval(intervaloVendas);
+  intervaloVendas = null;
+  inicioVendas = null;
+
+  relogioVendas.textContent = formatarTempo(tempoAcumulado);
+
+  botaoEncerrarVendas.disabled = true;
+  botaoEncerrarVendas.style.background = "#999";
+
+  verificarMochila();
+
+  statusVendas.textContent =
+    "🏁 Vendas encerradas! Tempo da missão: " +
+    formatarTempo(tempoAcumulado);
+};
+</script>
+</body></html>

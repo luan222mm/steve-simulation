@@ -1,0 +1,10 @@
+# Steve — Steve Simulation (RPG de Vendas Econômicas)
+Gamificação de realidade alternativa para controle de faturamento, estoque de jujubas, horas trabalhadas e evolução de expedições comerciais.
+
+## Estrutura de Arquivos:
+- index.html: Aplicação principal (Interface e Lógica).
+- manifest.json: Configurações de PWA para instalação no celular.
+- sw.js: Service Worker para suporte offline.
+- Assets visuais: fundos, avatares e pasta de ícones.
+
+Desenvolvido para uso autônomo e focado em alta eficiência e autonomia.
